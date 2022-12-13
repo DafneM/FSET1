@@ -1,0 +1,1 @@
+void read_jsonconfig (char *path);
