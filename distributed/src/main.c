@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "jsonParser/read_jsonconfig.c"
 // #include "io.h"
+#include "dht22.h"
 
 int L_01;
 int L_02;
@@ -15,6 +16,7 @@ int SJan;
 int SPor;
 int SC_IN;
 int SC_OUT;
+int SC_TEMP;
 
 static volatile int stateSPres;
 
@@ -82,9 +84,11 @@ int main (int argc, char *argv[])
   SPor = gpio_inputs[4].gpio;
   SC_IN = gpio_inputs[5].gpio;
   SC_OUT = gpio_inputs[6].gpio;
+  SC_TEMP = gpio_temp.gpio;
 
-  printf("gpio: %d", gpio_inputs[1].gpio);
-  printf("L02: %d", L_02);
+
+  // printf("gpio: %d", gpio_inputs[1].gpio);
+  // printf("L02: %d", L_02);
 
   if (wiringPiSetup () == -1)
     return 1 ;
@@ -122,6 +126,9 @@ int main (int argc, char *argv[])
   // printf("ola");
 
   // init_socket_teste(argc, &argv[]);
+
+  
+    // read_dht_data(SC_TEMP);
 
   return 0 ;
 }

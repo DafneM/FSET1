@@ -85,20 +85,25 @@ void read_jsonconfig (char *path){
     }
     int inputs_size = cJSON_GetArraySize(inputs);
 
-    i=0;
     sensor_temperatura = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "sensor_temperatura");
     cJSON_ArrayForEach(sensor_temp, sensor_temperatura)
     {
         cJSON *type = cJSON_GetObjectItemCaseSensitive(sensor_temp, "type");
         cJSON *tag = cJSON_GetObjectItemCaseSensitive(sensor_temp, "tag");
         cJSON *gpio = cJSON_GetObjectItemCaseSensitive(sensor_temp, "gpio");
+
+        int gpio_number = convert(gpio->valueint);
+
+        gpio_temp.type = type->valuestring;
+        gpio_temp.tag = type->valuestring;
+        gpio_temp.gpio = gpio_number;
     }
     int temp_size = cJSON_GetArraySize(sensor_temperatura);
 
     // printf("string: %s", nome->valuestring);
 
     // for  (int x = 0; x<inputs_size; x++){
-        printf("array: %d", gpio_inputs[0].gpio);
+        // printf("array: %d", gpio_inputs[0].gpio);
     // } 
 
     end:
