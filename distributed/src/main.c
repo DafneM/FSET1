@@ -1,9 +1,12 @@
 #include <wiringPi.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <stdint.h>
 #include "jsonParser/read_jsonconfig.c"
 // #include "io.h"
 #include "dht22.h"
+#include "distributed_client.h"
 
 int L_01;
 int L_02;
@@ -16,7 +19,9 @@ int SJan;
 int SPor;
 int SC_IN;
 int SC_OUT;
-int SC_TEMP;
+int DHT22;  
+
+#define WAIT_TIME 10000
 
 static volatile int stateSPres;
 
@@ -63,11 +68,23 @@ void turnOffAll(){
     turnOff(AL_BZ);
 }
 
-// PI_THREAD (turnOnAlarm)
-//     turnOn(AL_BZ);
+void *read_dht22 (void *arg){
+  int done = 0;
+  while(!done){
+		done = read_dht_data(DHT22);
+		delay(WAIT_TIME); 
+  }
+}
 
 int main (int argc, char *argv[])
 {
+  int done;
+
+  if (wiringPiSetup () == -1)
+    return 1 ;
+
+  pthread_t dht22_thread;
+
   //chama arquivo 1
   // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
   // chama arquivo 2
@@ -84,14 +101,11 @@ int main (int argc, char *argv[])
   SPor = gpio_inputs[4].gpio;
   SC_IN = gpio_inputs[5].gpio;
   SC_OUT = gpio_inputs[6].gpio;
-  SC_TEMP = gpio_temp.gpio;
+  DHT22 = gpio_temp.gpio;
 
+  open_distributed_client_socket();
 
-  // printf("gpio: %d", gpio_inputs[1].gpio);
-  // printf("L02: %d", L_02);
-
-  if (wiringPiSetup () == -1)
-    return 1 ;
+  pthread_create(&dht22_thread, NULL, read_dht22, NULL);
 
   // Define pinos OUTPUT
   pinMode (L_01, OUTPUT) ; //L01 1
@@ -104,12 +118,9 @@ int main (int argc, char *argv[])
   pullUpDnControl(SPres, PUD_DOWN);
   pullUpDnControl(SFum, PUD_DOWN);
 
-  //int a = piThreadCreate(turnOnAll); 
-
     stateSPres = digitalRead(stateSPres);
 
     wiringPiISR(SPres, INT_EDGE_BOTH, &handle);
-    // printf("%d", stateSPres);
 
     turnOnLamps();
     delay(500);
@@ -118,17 +129,6 @@ int main (int argc, char *argv[])
     turnOnAll();
     delay(500);
     turnOffAll();
-
-    // for (;;) {
-    //   printf("%d", stateSPres);
-		//   sleep(0.5);
-	  // }
-  // printf("ola");
-
-  // init_socket_teste(argc, &argv[]);
-
-  
-    // read_dht_data(SC_TEMP);
 
   return 0 ;
 }

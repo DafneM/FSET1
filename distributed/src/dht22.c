@@ -13,22 +13,11 @@
 // CONSTANTS 
 #define MAX_TIMINGS	85
 #define DEBUG 0
-#define WAIT_TIME 2000
-
-// GLOBAL VARIABLES
-// char mode = 'c';      // valid modes are c, f, h
-
-// int data[5] = { 0, 0, 0, 0, 0 };
-// float temp_cels = -1;
-// float humidity  = -1;
-
-// FUNCTION DECLARATIONS
-// int init();
-// void printUsage();
-// int read_dht_data();
 
 // FUNCTION DEFINITIONS
 int read_dht_data(int dht_pin) {
+
+	printf("cheguei");
 
 	int data[5] = { 0, 0, 0, 0, 0 };
 	float temp_cels = -1;
@@ -48,6 +37,8 @@ int read_dht_data(int dht_pin) {
 
 	/* prepare to read the pin */
 	pinMode(dht_pin, INPUT);
+
+	printf("%d", dht_pin);
 
 	/* detect change and read data */
 	for ( i = 0; i < MAX_TIMINGS; i++ ) {
@@ -74,11 +65,14 @@ int read_dht_data(int dht_pin) {
 		}
 	}
 
+	printf("aqui");
+
 	/*
 	 * check we read 40 bits (8bit x 5 ) + verify checksum in the last byte
 	 * print it out if data is good
 	 */
 	if ( (j >= 40) && (data[4] == ( (data[0] + data[1] + data[2] + data[3]) & 0xFF) ) ) {
+		printf("aqui2");
 		float h = (float)((data[0] << 8) + data[1]) / 10;
 		if ( h > 100 ) {
 			h = data[0];	// for DHT11
@@ -92,72 +86,13 @@ int read_dht_data(int dht_pin) {
 		}
 		temp_cels = c;
 		humidity = h;
-		if (DEBUG) printf( "read_dht_data() Humidity = %.1f %% Temperature = %.1f *C (%.1f *F)\n", humidity, temp_cels);
+		printf( "read_dht_data() Humidity = %.1f %% Temperature = %.1f\n", humidity, temp_cels);
+		if (DEBUG) printf( "read_dht_data() Humidity = %.1f %% Temperature = %.1f\n", humidity, temp_cels);
 		return 0; // OK
 	} else {
+		printf("no else");
 		if (DEBUG) printf( "read_dht_data() Data not good, skip\n" );
 		temp_cels = humidity = -1;
 		return 1; // NOK
 	}
 }
-
-// void printUsage() {
-// 	fprintf(stdout, "Usage: dht22 t|h pin\n"
-//                         "             c   .. temperature celsius\n"
-//                         "             f   .. temperature fahrenheit\n"
-//                         "             h   .. humidity\n"
-//                         "             pin .. GPIO pin (wiringPi numbering)\n");
-// }
-
-// // int init() {
-// 	if (wiringPiSetup() == -1) {
-// 		fprintf(stderr, "Failed to initialize wiringPi\n");
-// 		exit(1);
-// 		return 1;
-// 	}
-// 	return 0;
-// }
-
-// int main(int argc, char *argv[]) {
-// 	int done = 0;
-
-// 	if (argc!=3) {
-// 		printUsage(); 
-// 		exit(1);
-// 		return 1;
-// 	} else {
-// 		mode = argv[1][0];		
-// 		dht_pin = atoi(argv[2]);
-// 		if (mode!='c' && mode!='f' && mode!='h') {
-// 			printUsage();
-// 			exit(1);
-// 			return 1;
-// 		}
-// 	}
-// 	if (DEBUG) fprintf(stdout, "Reading DHT22 ... mode=%c sensorPIN=%i\n", mode, dht_pin);
-
-// 	init();
-
-// 	while (!done) {
-// 		done = !read_dht_data();
-// 		delay(WAIT_TIME); 
-// 	}
-
-// 	switch(mode) {
-// 		case 'c':
-// 			fprintf(stdout, "%.1f\n", temp_cels);
-// 			break;
-// 		case 'f':
-// 			fprintf(stdout, "%.1f\n", temp_fahr);
-// 			break;
-// 		case 'h':
-// 			fprintf(stdout, "%.1f\n", humidity);
-// 			break;
-// 		default:
-// 			fprintf(stderr, "invalid mode '%c', should not happen\n", mode);
-// 	}
-	
-// 	if (DEBUG) printf( "main() Humidity = %.1f %% Temperature = %.1f *C (%.1f *F)\n", humidity, temp_cels, temp_fahr );
-
-// 	return(0);
-// }

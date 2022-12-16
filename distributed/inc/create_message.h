@@ -1,0 +1,1 @@
+char *create_json_message(void);

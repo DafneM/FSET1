@@ -8,12 +8,9 @@ data_payload = 2048
 FORMAT = "utf-8"
 
 json_states = ''' 
-    "inputs": [
-        {
-            sig = "L_01"
-            state = 1
-        }
-    ]
+    {  
+        "nome": "Dafne" 
+    }
 '''
 
 def main():
