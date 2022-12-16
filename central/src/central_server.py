@@ -20,7 +20,7 @@ def receive_client(connection, addr):
 
         # json_message = json_to_object(message)
 
-        print(f"Mensagem recebida: {message}")
+        print(f"Mensagem recebida: {json_message}")
         # connection.sendall(len(message).to_bytes(4, 'little'), encoding=FORMAT)
         connection.sendall(bytes(message, encoding=FORMAT))
 

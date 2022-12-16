@@ -1,3 +1,5 @@
+#ifndef GPIO_H
+#define GPIO_H
 
 typedef struct 
 {
@@ -27,3 +29,5 @@ typedef struct
     int gpio;
 } gpio_temps;
 gpio_temps gpio_temp;
+
+#endif

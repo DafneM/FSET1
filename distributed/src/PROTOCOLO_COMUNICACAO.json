@@ -1,0 +1,20 @@
+ {
+    "ip_servidor_central": "192.168.0.53",
+    "porta_servidor_central": 10000,
+    "ip_servidor_distribuido": "192.168.0.52",
+    "porta_servidor_distribuido": 10200,
+    "nome": "Sala 01",
+    "id_servidor_distribuido": 1,
+    "L_01_state": 1,
+    "L_02_state": 1,
+    "PR_state": 1,
+    "AC_state": 1,
+    "AL_BZ_state": 1,
+    "SPres_state": 1,
+    "SFum_state": 1,
+    "SJan_state": 1,
+    "SPor_state": 1,
+    "SC_IN_state": 1,
+    "SC_OUT_state": 1,
+    "DHT22_state": 1
+}

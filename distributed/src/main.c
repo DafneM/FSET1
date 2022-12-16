@@ -6,7 +6,11 @@
 #include "jsonParser/read_jsonconfig.c"
 // #include "io.h"
 #include "dht22.h"
-#include "distributed_client.h"
+#include <distributed_client.h>
+#include <states_io.h>
+#include <create_message.h>
+#include <read_message.h>
+#include <states_io.h>
 
 int L_01;
 int L_02;
@@ -76,20 +80,7 @@ void *read_dht22 (void *arg){
   }
 }
 
-int main (int argc, char *argv[])
-{
-  int done;
-
-  if (wiringPiSetup () == -1)
-    return 1 ;
-
-  pthread_t dht22_thread;
-
-  //chama arquivo 1
-  // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
-  // chama arquivo 2
-  read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_02.json");
-
+void init_gpio(){
   L_01 = gpio_outputs[0].gpio;
   L_02 = gpio_outputs[1].gpio;
   AC = gpio_outputs[2].gpio;
@@ -102,21 +93,60 @@ int main (int argc, char *argv[])
   SC_IN = gpio_inputs[5].gpio;
   SC_OUT = gpio_inputs[6].gpio;
   DHT22 = gpio_temp.gpio;
+}
 
-  open_distributed_client_socket();
+void init_states(){
+  states.L_01_state = 0;
+  states.L_02_state = 0;
+  states.AC_state = 0;
+  states.PR_state = 0;
+  states.AL_BZ_state = 0;
+  states.SPres_state = 0;
+  states.SJan_state = 0;
+  states.SPor_state = 0;
+  states.SC_IN_state = 0;
+  states.SC_OUT_state = 0;
+  states.DHT22_state = 0;
+}
 
-  pthread_create(&dht22_thread, NULL, read_dht22, NULL);
-
+void def_pins(){
   // Define pinos OUTPUT
   pinMode (L_01, OUTPUT) ; //L01 1
   pinMode (L_02, OUTPUT) ; //L02 2
   pinMode (AC, OUTPUT) ; //Ar
   pinMode (PR, OUTPUT) ; //Projetor   
-  pinMode (AL_BZ, OUTPUT) ; //Alarme       
- 
+  pinMode (AL_BZ, OUTPUT) ; //Alarme  
+
   //Define sensores INPUT
   pullUpDnControl(SPres, PUD_DOWN);
-  pullUpDnControl(SFum, PUD_DOWN);
+  pullUpDnControl(SFum, PUD_DOWN);  
+}
+
+int main (int argc, char *argv[])
+{
+  int done;
+  char *string = malloc(1000);
+
+  if (wiringPiSetup () == -1)
+    return 1 ;
+
+  pthread_t dht22_thread;
+
+  //chama arquivo 1
+  // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
+  
+  // chama arquivo 2
+  read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_02.json");
+
+  init_gpio();
+  init_states();
+
+  string = create_json_message();
+  read_json_message(string);
+
+  // open_distributed_client_socket();
+
+  pthread_create(&dht22_thread, NULL, read_dht22, NULL);
 
     stateSPres = digitalRead(stateSPres);
 

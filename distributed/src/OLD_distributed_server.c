@@ -5,7 +5,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
-#include "jsonParser/read_message.c"
 
 int servidorSocket;
 int socketCliente;
