@@ -17,7 +17,7 @@
 // FUNCTION DEFINITIONS
 int read_dht_data(int dht_pin) {
 
-	printf("cheguei");
+	// printf("cheguei");
 
 	int data[5] = { 0, 0, 0, 0, 0 };
 	float temp_cels = -1;
@@ -38,7 +38,7 @@ int read_dht_data(int dht_pin) {
 	/* prepare to read the pin */
 	pinMode(dht_pin, INPUT);
 
-	printf("%d", dht_pin);
+	// printf("%d", dht_pin);
 
 	/* detect change and read data */
 	for ( i = 0; i < MAX_TIMINGS; i++ ) {
@@ -65,7 +65,7 @@ int read_dht_data(int dht_pin) {
 		}
 	}
 
-	printf("aqui");
+	// printf("aqui");
 
 	/*
 	 * check we read 40 bits (8bit x 5 ) + verify checksum in the last byte

@@ -63,7 +63,7 @@ char *create_json_message(){
         fprintf(stderr, "Failed to print message.\n");
     }
 
-    printf("%s ", string);
+    // printf("%s ", string);
 
     return string;
 }

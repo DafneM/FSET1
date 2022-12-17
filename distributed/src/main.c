@@ -36,14 +36,14 @@ char *IP_Servidor;
 
 #define WAIT_TIME 10000
 
-static volatile int stateSPres;
+// static volatile int stateSPres;
 
 void handle(void) {
-  	if (stateSPres) {
-      stateSPres = 0;
+  	if (states.SPres_state) {
+      states.SPres_state = 0;
 		}
 		else {
-      stateSPres = 1;
+      states.SPres_state = 1;
 		}
 }
 
@@ -134,13 +134,14 @@ void def_pins(){
 
 void open_distributed_client_socket() {
 	IP_Servidor = "164.41.98.26";
-	servidorPorta = 10732;
+	servidorPorta = 10733;
 
   pthread_t read_central_thread;
 
 	// Criar Socket
 	if((clienteSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
 		printf("Erro no socket()\n");
+    fflush(stdin);
 
 	// Construir struct sockaddr_in
 	memset(&servidorAddr, 0, sizeof(servidorAddr)); // Zerando a estrutura de dados
@@ -149,15 +150,20 @@ void open_distributed_client_socket() {
 	servidorAddr.sin_port = htons(servidorPorta);
 
   while(1){
-    // Connect
-    if(connect(clienteSocket, (struct sockaddr *) &servidorAddr, 
-                sizeof(servidorAddr)) < 0)
+    if (connect(clienteSocket, (struct sockaddr *) &servidorAddr, 
+                sizeof(servidorAddr)) < 0) {
       printf("Ainda não estou conectado! Por favor, tente novamente.\n");
+      fflush(stdin);
+    }
     else{
+      printf("no else\n");
+      fflush(stdin);
       break;
     }
     sleep(1);
   }
+  printf("aqui2\n");
+  fflush(stdin);
 }
 
 void *read_central(void *arg){
@@ -166,28 +172,28 @@ void *read_central(void *arg){
 	char buffer[2048];
 	unsigned int tamanhoMensagem;
 
-  memset(buffer, 0, 2048);
-
   while(1){
-    if(recv(clienteSocket, tamanhoMensagem, 4, MSG_WAITALL) < 0) {
+    memset(buffer, 0, 2048);
+    if(recv(clienteSocket, buffer, 2048 - 1, 0) < 0) {
       printf("erro\n");
-    }
-    if(recv(clienteSocket, buffer, 2048, MSG_WAITALL) < 0) {
-      printf("erro\n");
+      fflush(stdin);
     }
     else{
+      fflush(stdin);
       read_json_message(buffer);
-      printf("%d\n", states.SPres_state);
+      printf("state SPres %d\n", states.SPres_state);
+      fflush(stdin);
     }
   }
 
-
 	close(clienteSocket);
-	exit(0);
 }
 
 void send_central_data(){
   	char *string;
+
+    printf("cheguei send\n");
+    fflush(stdin);
 
     string = create_json_message();
 
@@ -216,17 +222,17 @@ int main (int argc, char *argv[])
   init_gpio();
   init_states();
 
-  // string = create_json_message();
-  // read_json_message(string);
-
   open_distributed_client_socket();
 
-  pthread_create(&dht22_thread, NULL, read_dht22, NULL);
+  printf("voltei pra main\n");
+  fflush(stdin);
+
+  // pthread_create(&dht22_thread, NULL, read_dht22, NULL);
   pthread_create(&read_central_thread, NULL, read_central, NULL);
 
     // stateSPres = digitalRead(stateSPres);
 
-    // wiringPiISR(SPres, INT_EDGE_BOTH, &handle);
+    wiringPiISR(SPres, INT_EDGE_BOTH, &handle);
 
     while(1){
       send_central_data();
