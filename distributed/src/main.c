@@ -6,11 +6,15 @@
 #include "jsonParser/read_jsonconfig.c"
 // #include "io.h"
 #include "dht22.h"
-#include <distributed_client.h>
 #include <states_io.h>
 #include <create_message.h>
 #include <read_message.h>
 #include <states_io.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 int L_01;
 int L_02;
@@ -24,6 +28,11 @@ int SPor;
 int SC_IN;
 int SC_OUT;
 int DHT22;  
+
+int clienteSocket;
+struct sockaddr_in servidorAddr;
+unsigned short servidorPorta;
+char *IP_Servidor;
 
 #define WAIT_TIME 10000
 
@@ -49,6 +58,7 @@ void turnOff(int Y){
 void turnOnLamps(){
   turnOn(L_01);
   turnOn(L_02);
+  send_central_data();
 }
 
 void turnOffLamps(){
@@ -122,6 +132,70 @@ void def_pins(){
   pullUpDnControl(SFum, PUD_DOWN);  
 }
 
+void open_distributed_client_socket() {
+	IP_Servidor = "164.41.98.26";
+	servidorPorta = 10732;
+
+  pthread_t read_central_thread;
+
+	// Criar Socket
+	if((clienteSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+		printf("Erro no socket()\n");
+
+	// Construir struct sockaddr_in
+	memset(&servidorAddr, 0, sizeof(servidorAddr)); // Zerando a estrutura de dados
+	servidorAddr.sin_family = AF_INET;
+	servidorAddr.sin_addr.s_addr = inet_addr(IP_Servidor);
+	servidorAddr.sin_port = htons(servidorPorta);
+
+  while(1){
+    // Connect
+    if(connect(clienteSocket, (struct sockaddr *) &servidorAddr, 
+                sizeof(servidorAddr)) < 0)
+      printf("Ainda não estou conectado! Por favor, tente novamente.\n");
+    else{
+      break;
+    }
+    sleep(1);
+  }
+}
+
+void *read_central(void *arg){
+
+	char *mensagem = malloc(2048);
+	char buffer[2048];
+	unsigned int tamanhoMensagem;
+
+  memset(buffer, 0, 2048);
+
+  while(1){
+    if(recv(clienteSocket, tamanhoMensagem, 4, MSG_WAITALL) < 0) {
+      printf("erro\n");
+    }
+    if(recv(clienteSocket, buffer, 2048, MSG_WAITALL) < 0) {
+      printf("erro\n");
+    }
+    else{
+      read_json_message(buffer);
+      printf("%d\n", states.SPres_state);
+    }
+  }
+
+
+	close(clienteSocket);
+	exit(0);
+}
+
+void send_central_data(){
+  	char *string;
+
+    string = create_json_message();
+
+    int len = strlen(string);
+
+  	send(clienteSocket, string, len, 0);
+}
+
 int main (int argc, char *argv[])
 {
   int done;
@@ -131,26 +205,33 @@ int main (int argc, char *argv[])
     return 1 ;
 
   pthread_t dht22_thread;
+  pthread_t read_central_thread;
 
   //chama arquivo 1
   // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
-  
+
   // chama arquivo 2
   read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_02.json");
 
   init_gpio();
   init_states();
 
-  string = create_json_message();
-  read_json_message(string);
+  // string = create_json_message();
+  // read_json_message(string);
 
-  // open_distributed_client_socket();
+  open_distributed_client_socket();
 
   pthread_create(&dht22_thread, NULL, read_dht22, NULL);
+  pthread_create(&read_central_thread, NULL, read_central, NULL);
 
-    stateSPres = digitalRead(stateSPres);
+    // stateSPres = digitalRead(stateSPres);
 
-    wiringPiISR(SPres, INT_EDGE_BOTH, &handle);
+    // wiringPiISR(SPres, INT_EDGE_BOTH, &handle);
+
+    while(1){
+      send_central_data();
+      sleep(1);
+    }
 
     turnOnLamps();
     delay(500);

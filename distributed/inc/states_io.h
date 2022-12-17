@@ -1,5 +1,5 @@
-#ifndef STATES_JSON_H
-#define STATES_JSON_H
+#ifndef STATES_H
+#define STATES_H
 
 typedef struct
 {   

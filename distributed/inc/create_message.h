@@ -1,7 +1,7 @@
 #ifndef CREATE_JSON_H
 #define CREATE_JSON_H
 
-char *create_json_message(void);
+// char *create_json_message(void);
 
 #include "cJSON.h"
 #include <stdio.h>
@@ -62,6 +62,8 @@ char *create_json_message(){
     {
         fprintf(stderr, "Failed to print message.\n");
     }
+
+    printf("%s ", string);
 
     return string;
 }
