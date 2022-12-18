@@ -81,8 +81,6 @@ void read_json_message(char *buf){
 
     states.DHT22_state = DHT22_state->valueint;
 
-    printf("STATE L_01 %d", states.L_01_state);
-
     end:
         cJSON_Delete(message);
 

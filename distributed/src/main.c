@@ -36,14 +36,39 @@ char *IP_Servidor;
 
 #define WAIT_TIME 10000
 
-// static volatile int stateSPres;
-
-void handle(void) {
-  	if (states.SPres_state) {
+void handleSPres(void) {
+  	if (states.SPres_state == 1) {
       states.SPres_state = 0;
 		}
 		else {
       states.SPres_state = 1;
+		}
+}
+
+void handleSFum(void) {
+  	if (states.SFum_state == 1) {
+      states.SFum_state = 0;
+		}
+		else {
+      states.SFum_state = 1;
+		}
+}
+
+void handleSJan(void) {
+  	if (states.SJan_state == 1) {
+      states.SJan_state = 0;
+		}
+		else {
+      states.SJan_state = 1;
+		}
+}
+
+void handleSPor(void) {
+  	if (states.SPor_state == 1) {
+      states.SPor_state = 0;
+		}
+		else {
+      states.SPor_state = 1;
 		}
 }
 
@@ -52,7 +77,7 @@ void turnOn(int X){
 }
 
 void turnOff(int Y){
-    digitalWrite (Y, 0) ;  
+    digitalWrite (Y, 0) ;   
 }
 
 void turnOnLamps(){
@@ -93,30 +118,31 @@ void *read_dht22 (void *arg){
 void init_gpio(){
   L_01 = gpio_outputs[0].gpio;
   L_02 = gpio_outputs[1].gpio;
-  AC = gpio_outputs[2].gpio;
-  PR = gpio_outputs[3].gpio;
+  PR = gpio_outputs[2].gpio;
+  AC = gpio_outputs[3].gpio;
   AL_BZ = gpio_outputs[4].gpio;
-  SPres = gpio_inputs[1].gpio;
-  SFum = gpio_inputs[2].gpio;
-  SJan = gpio_inputs[3].gpio;
-  SPor = gpio_inputs[4].gpio;
-  SC_IN = gpio_inputs[5].gpio;
-  SC_OUT = gpio_inputs[6].gpio;
+  SPres = gpio_inputs[0].gpio;
+  SFum = gpio_inputs[1].gpio;
+  SJan = gpio_inputs[2].gpio;
+  SPor = gpio_inputs[3].gpio;
+  SC_IN = gpio_inputs[4].gpio;
+  SC_OUT = gpio_inputs[5].gpio;
   DHT22 = gpio_temp.gpio;
 }
 
 void init_states(){
-  states.L_01_state = 0;
-  states.L_02_state = 0;
-  states.AC_state = 0;
-  states.PR_state = 0;
-  states.AL_BZ_state = 0;
-  states.SPres_state = 0;
-  states.SJan_state = 0;
-  states.SPor_state = 0;
-  states.SC_IN_state = 0;
-  states.SC_OUT_state = 0;
-  states.DHT22_state = 0;
+  states.L_01_state =  digitalRead(L_01);
+  states.L_02_state = digitalRead(L_02);
+  states.AC_state = digitalRead(AC);
+  states.PR_state = digitalRead(PR);
+  states.AL_BZ_state = digitalRead(AL_BZ);
+  states.SPres_state = digitalRead(SPres);
+  states.SFum_state = digitalRead(SFum);
+  states.SJan_state = digitalRead(SJan);
+  states.SPor_state = digitalRead(SPor);
+  states.SC_IN_state = digitalRead(SC_IN);
+  states.SC_OUT_state = digitalRead(SC_OUT);
+  states.DHT22_state = digitalRead(DHT22);
 }
 
 void def_pins(){
@@ -130,10 +156,14 @@ void def_pins(){
   //Define sensores INPUT
   pullUpDnControl(SPres, PUD_DOWN);
   pullUpDnControl(SFum, PUD_DOWN);  
+  pullUpDnControl(SJan, PUD_DOWN);
+  pullUpDnControl(SPor, PUD_DOWN);  
+  pullUpDnControl(SJan, SC_IN);
+  pullUpDnControl(SPor, SC_OUT);  
 }
 
 void open_distributed_client_socket() {
-	IP_Servidor = "164.41.98.26";
+	IP_Servidor = "164.41.98.16";
 	servidorPorta = 10733;
 
   pthread_t read_central_thread;
@@ -156,13 +186,11 @@ void open_distributed_client_socket() {
       fflush(stdin);
     }
     else{
-      printf("no else\n");
       fflush(stdin);
       break;
     }
     sleep(1);
   }
-  printf("aqui2\n");
   fflush(stdin);
 }
 
@@ -179,9 +207,8 @@ void *read_central(void *arg){
       fflush(stdin);
     }
     else{
-      fflush(stdin);
       read_json_message(buffer);
-      printf("state SPres %d\n", states.SPres_state);
+      verify_states();
       fflush(stdin);
     }
   }
@@ -189,11 +216,50 @@ void *read_central(void *arg){
 	close(clienteSocket);
 }
 
+void verify_states(){
+  if(states.L_01_state == 0){
+    turnOff(L_01);
+  }
+
+  if(states.L_01_state == 1){
+    turnOn(L_01);
+  }
+
+  if(states.L_02_state == 0){
+    turnOff(L_02);
+  }
+
+  if(states.L_02_state == 1){
+    turnOn(L_02);
+  }
+
+  if(states.AC_state == 1){
+    turnOn(AC);
+  }
+
+  if(states.AC_state == 0){
+    turnOff(AC);
+  }
+
+  if(states.PR_state == 1){
+    turnOn(PR);
+  }
+
+  if(states.PR_state == 0){
+    turnOn(PR);
+  }
+
+  if(states.AL_BZ_state == 1){
+    turnOn(AL_BZ);
+  }
+
+  if(states.AL_BZ_state == 0){
+    turnOff(AL_BZ);
+  }
+}
+
 void send_central_data(){
   	char *string;
-
-    printf("cheguei send\n");
-    fflush(stdin);
 
     string = create_json_message();
 
@@ -214,38 +280,32 @@ int main (int argc, char *argv[])
   pthread_t read_central_thread;
 
   //chama arquivo 1
-  // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
+  read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
 
   // chama arquivo 2
-  read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_02.json");
+  // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_02.json");
 
   init_gpio();
   init_states();
 
   open_distributed_client_socket();
 
-  printf("voltei pra main\n");
-  fflush(stdin);
-
   // pthread_create(&dht22_thread, NULL, read_dht22, NULL);
   pthread_create(&read_central_thread, NULL, read_central, NULL);
 
-    // stateSPres = digitalRead(stateSPres);
+  wiringPiISR(SPres, INT_EDGE_BOTH, &handleSPres);
+  wiringPiISR(SFum, INT_EDGE_BOTH, &handleSFum);
+  wiringPiISR(SJan, INT_EDGE_BOTH, &handleSJan);
+  wiringPiISR(SPor, INT_EDGE_BOTH, &handleSPor);
 
-    wiringPiISR(SPres, INT_EDGE_BOTH, &handle);
+  while(1){
+    send_central_data();
+    sleep(1);
+  }
 
-    while(1){
-      send_central_data();
-      sleep(1);
-    }
-
-    turnOnLamps();
-    delay(500);
-    turnOffLamps();
-
-    turnOnAll();
-    delay(500);
-    turnOffAll();
+  // turnOnAll();
+  // delay(500);
+  // turnOffAll();
 
   return 0 ;
 }

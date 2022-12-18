@@ -4,12 +4,12 @@ from parse import json_to_object
 from parse import object_to_json
 import json
 
-IP = "164.41.98.26"
+IP = "164.41.98.16"
 PORT = 10733
 ADDR = (IP, PORT)
 data_payload = 2048
 FORMAT = "utf-8"
-json_message = {}
+json_message =  {}
 
 def receive_client(connection, addr):
     global json_message
@@ -38,20 +38,93 @@ def send_message(connection, message):
 def manage_user_interface(connection, addr):
     global json_message
 
-    print("Seja bem vindo, esses são os estados da sua gpio:")
+    instruction = -1
+    while(instruction != 0):
+        print("Esses são os estados da sua gpio:\n")
 
-    print("O que você deseja fazer?")
-    
-    instruction = int(input("Digite 1 para apagar a lampada: "))
-    json_message["L_01_state"] = 1
+        estados_print = ('Lampada 1: ' +  str(json_message["L_01_state"]) +
+        '\nLampada 2: ' + str(json_message["L_02_state"]) +
+        '\nProjetor:' + str(json_message["PR_state"]) +
+        '\nAr condicionado:' + str(json_message["AC_state"]) +
+        '\nAlarme:' + str(json_message["AL_BZ_state"]) +
+        '\nSensor de presença' + str(json_message["SPres_state"]) +
+        '\nSensor de fumaça:' + str(json_message["SFum_state"]) +
+        '\nSensor de janela' + str(json_message["SJan_state"]) +
+        '\nSensor de porta' + str(json_message["SPor_state"]))
+        print(estados_print)
 
-    json_send_message = object_to_json(json_message)
+        print("O que você deseja fazer?")
+        print('''   [1] Ligar lampada 01
+        [2] Desligar lampada 01
+        [3] Ligar lampada 02
+        [4] Desligar lampada 02
+        [5] Ligar as duas lampadas
+        [6] Desligar as duas lampadas
+        [7] Ligar ar condicionado
+        [8] Desligar ar condicionado
+        [9] Ligar projetor
+        [10] Desligar projetor
+        [11] Ligar alarme
+        [12] Desligar alarme
+        [13] Ver os estados 
+        [0] Sair
+        ''')
+        instruction = int(input("Qual é a opção que você deseja? "))
 
-    # breakpoint()
-    if instruction == 1:
+        # breakpoint()
+        if instruction == 0:
+            break
 
+        if instruction == 1:
+            json_message["L_01_state"] = 1
+
+        if instruction == 2:
+            json_message["L_01_state"] = 0
+        
+        if instruction == 3:
+            json_message["L_02_state"] = 1
+
+        if instruction == 4:
+            json_message["L_02_state"] = 0
+
+        if instruction == 5:
+            json_message["L_01_state"] = 1
+            json_message["L_02_state"] = 1
+
+        if instruction == 6:
+            json_message["L_01_state"] = 0
+            json_message["L_02_state"] = 0
+
+        if instruction == 7:
+            json_message["AC_state"] = 1
+
+        if instruction == 8:
+            json_message["AC_state"] = 0
+
+        if instruction == 9:
+            json_message["PR_state"] = 1
+
+        if instruction == 10:
+            json_message["PR_state"] = 0
+
+        if instruction == 11:
+            json_message["AL_BZ_state"] = 1
+
+        if instruction == 12:
+            json_message["AL_BZ_state"] = 0
+
+        if instruction == 13:
+            print(f'{json_message}\n')
+
+        json_send_message = object_to_json(json_message)
         send_message(connection, json_send_message)
 
+def init_json(connection, addr):
+    global json_message
+
+    message = connection.recv(data_payload)
+    json_message = json.loads(message)
+    print(json_message)
 
 def main():
     print("Server is starting")
@@ -61,6 +134,8 @@ def main():
     print(f"ip e porta {IP}:{PORT}")
 
     connection, addr = server.accept()
+
+    init_json(connection, addr)
 
     thread = threading.Thread(target=receive_client, args=(connection, addr))
     thread.start()

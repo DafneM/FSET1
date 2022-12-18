@@ -106,6 +106,7 @@ void read_jsonconfig (char *path){
     // for  (int x = 0; x<inputs_size; x++){
         // printf("array: %d", gpio_inputs[0].gpio);
     // } 
+    printf("json_config %d\n", gpio_outputs[0].gpio);
 
     end:
         cJSON_Delete(configuracao_sala_json);
