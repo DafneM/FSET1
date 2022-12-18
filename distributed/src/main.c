@@ -36,6 +36,16 @@ char *IP_Servidor;
 
 #define WAIT_TIME 10000
 
+void handlePeopleIN(void) {
+  	states.SC_qtd++;
+}
+
+
+void handlePeopleOUT(void) {
+  	states.SC_qtd--;
+}
+
+
 void handleSPres(void) {
   	if (states.SPres_state == 1) {
       states.SPres_state = 0;
@@ -142,6 +152,7 @@ void init_states(){
   states.SPor_state = digitalRead(SPor);
   states.SC_IN_state = digitalRead(SC_IN);
   states.SC_OUT_state = digitalRead(SC_OUT);
+  states.SC_qtd = 0;
   states.DHT22_state = digitalRead(DHT22);
 }
 
@@ -158,13 +169,21 @@ void def_pins(){
   pullUpDnControl(SFum, PUD_DOWN);  
   pullUpDnControl(SJan, PUD_DOWN);
   pullUpDnControl(SPor, PUD_DOWN);  
-  pullUpDnControl(SJan, SC_IN);
-  pullUpDnControl(SPor, SC_OUT);  
+  pullUpDnControl(SJan, PUD_DOWN);
+  pullUpDnControl(SPor, PUD_DOWN);  
+  pullUpDnControl(SC_IN, PUD_DOWN);
+  pullUpDnControl(SC_OUT, PUD_DOWN);  
 }
 
 void open_distributed_client_socket() {
-	IP_Servidor = "164.41.98.16";
-	servidorPorta = 10733;
+
+  printf("antes %s\n", ip_dist);
+  fflush(stdin);
+	IP_Servidor = "164.41.98.26";
+	servidorPorta = porta_dist;
+
+  printf("aq %s\n", IP_Servidor);
+  printf("aq %d\n", servidorPorta);
 
   pthread_t read_central_thread;
 
@@ -280,23 +299,26 @@ int main (int argc, char *argv[])
   pthread_t read_central_thread;
 
   //chama arquivo 1
-  read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
+  // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
 
   // chama arquivo 2
-  // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_02.json");
+  read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_02.json");
 
   init_gpio();
   init_states();
 
   open_distributed_client_socket();
 
-  // pthread_create(&dht22_thread, NULL, read_dht22, NULL);
+  pthread_create(&dht22_thread, NULL, read_dht22, NULL);
   pthread_create(&read_central_thread, NULL, read_central, NULL);
 
   wiringPiISR(SPres, INT_EDGE_BOTH, &handleSPres);
   wiringPiISR(SFum, INT_EDGE_BOTH, &handleSFum);
   wiringPiISR(SJan, INT_EDGE_BOTH, &handleSJan);
   wiringPiISR(SPor, INT_EDGE_BOTH, &handleSPor);
+
+  wiringPiISR(SC_IN, INT_EDGE_BOTH, handlePeopleIN);
+  wiringPiISR(SC_OUT, INT_EDGE_BOTH, handlePeopleOUT);
 
   while(1){
     send_central_data();

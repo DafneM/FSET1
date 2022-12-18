@@ -32,6 +32,7 @@ void read_json_message(char *buf){
 
     const cJSON *SC_IN_state = NULL;
     const cJSON *SC_OUT_state = NULL;
+    const cJSON *SC_qtd = NULL;
     const cJSON *DHT22_state = NULL;
 
     if (message == NULL)
@@ -63,6 +64,7 @@ void read_json_message(char *buf){
 
     SC_IN_state = cJSON_GetObjectItemCaseSensitive(message, "SC_IN_state");
     SC_OUT_state = cJSON_GetObjectItemCaseSensitive(message, "SC_OUT_state");
+    SC_qtd = cJSON_GetObjectItemCaseSensitive(message, "SC_qtd");
     DHT22_state = cJSON_GetObjectItemCaseSensitive(message, "DHT22_state");
 
     states.L_01_state = L_01_state->valueint;
@@ -78,6 +80,7 @@ void read_json_message(char *buf){
 
     states.SC_IN_state = SC_IN_state->valueint;
     states.SC_OUT_state = SC_OUT_state->valueint;
+    states.SC_qtd = SC_qtd->valueint;
 
     states.DHT22_state = DHT22_state->valueint;
 

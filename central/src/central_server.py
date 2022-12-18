@@ -3,9 +3,13 @@ import threading
 from parse import json_to_object
 from parse import object_to_json
 import json
+import sys
 
-IP = "164.41.98.16"
-PORT = 10733
+# IP = "164.41.98.26"
+# PORT = 10733
+# ADDR = (IP, PORT)
+IP = ""
+PORT = 0
 ADDR = (IP, PORT)
 data_payload = 2048
 FORMAT = "utf-8"
@@ -50,7 +54,8 @@ def manage_user_interface(connection, addr):
         '\nSensor de presença' + str(json_message["SPres_state"]) +
         '\nSensor de fumaça:' + str(json_message["SFum_state"]) +
         '\nSensor de janela' + str(json_message["SJan_state"]) +
-        '\nSensor de porta' + str(json_message["SPor_state"]))
+        '\nSensor de porta' + str(json_message["SPor_state"]) +
+        '\nQuantidade de pessoas' + str(json_message["SC_qtd"]))
         print(estados_print)
 
         print("O que você deseja fazer?")
@@ -124,9 +129,14 @@ def init_json(connection, addr):
 
     message = connection.recv(data_payload)
     json_message = json.loads(message)
-    print(json_message)
 
 def main():
+    global IP, PORT, ADDR
+
+    IP = sys.argv[1]
+    PORT = int(sys.argv[2])
+    ADDR = (IP, PORT)
+
     print("Server is starting")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(ADDR)

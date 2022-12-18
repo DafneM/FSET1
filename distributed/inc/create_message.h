@@ -22,6 +22,7 @@ char *create_json_message(){
     cJSON *SPor_state = NULL;
     cJSON *SC_IN_state = NULL;
     cJSON *SC_OUT_state = NULL;
+    cJSON *SC_qtd = NULL;
     cJSON *DHT22_state = NULL;
 
     L_01_state = cJSON_CreateNumber(states.L_01_state);
@@ -37,6 +38,7 @@ char *create_json_message(){
 
     SC_IN_state = cJSON_CreateNumber(states.SC_IN_state);
     SC_OUT_state = cJSON_CreateNumber(states.SC_OUT_state);
+    SC_qtd = cJSON_CreateNumber(states.SC_qtd);
     DHT22_state = cJSON_CreateNumber(states.DHT22_state);
 
     cJSON *message = cJSON_CreateObject();
@@ -54,6 +56,7 @@ char *create_json_message(){
 
     cJSON_AddItemToObject(message, "SC_IN_state", SC_IN_state);
     cJSON_AddItemToObject(message, "SC_OUT_state", SC_OUT_state);
+    cJSON_AddItemToObject(message, "SC_qtd", SC_qtd);
     cJSON_AddItemToObject(message, "DHT22_state", DHT22_state);
 
     string = cJSON_Print(message);

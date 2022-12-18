@@ -22,6 +22,7 @@ typedef struct
     
     int SC_IN_state;
     int SC_OUT_state;
+    int SC_qtd;
     int DHT22_state;
 } state;
 state states;

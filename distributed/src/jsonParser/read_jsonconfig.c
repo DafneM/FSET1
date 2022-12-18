@@ -3,6 +3,7 @@
 #include "cJSON.c"
 #include "io.h"
 #include "gpio_to_wiring.c"
+#include <string.h>
 
 void read_jsonconfig (char *path){
 
@@ -50,6 +51,14 @@ void read_jsonconfig (char *path){
     ip_servidor_distribuido = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "ip_servidor_distribuido");
     porta_servidor_distribuido = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "porta_servidor_distribuido");
     nome = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "nome");
+
+    // ip_dist = ip_servidor_distribuido->valuestring;
+    porta_dist =  porta_servidor_distribuido->valueint;
+
+    strcpy(ip_dist, ip_servidor_distribuido->valuestring);
+
+    printf("%s\n", ip_dist);
+    printf("%d\n", porta_dist);
 
     int i = 0;
     outputs = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "outputs");

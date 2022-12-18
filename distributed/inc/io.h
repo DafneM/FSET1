@@ -1,6 +1,8 @@
 #ifndef GPIO_H
 #define GPIO_H
 
+#import <stdlib.h>
+
 typedef struct 
 {
     char* type; 
@@ -29,5 +31,9 @@ typedef struct
     int gpio;
 } gpio_temps;
 gpio_temps gpio_temp;
+
+unsigned short porta_dist;
+char ip_dist[20];
+char *nome;
 
 #endif
