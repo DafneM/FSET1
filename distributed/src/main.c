@@ -177,13 +177,10 @@ void def_pins(){
 
 void open_distributed_client_socket() {
 
-  printf("antes %s\n", ip_dist);
-  fflush(stdin);
-	IP_Servidor = "164.41.98.26";
+	IP_Servidor = ip_dist;
 	servidorPorta = porta_dist;
 
-  printf("aq %s\n", IP_Servidor);
-  printf("aq %d\n", servidorPorta);
+  printf("servidor ip %s\n", IP_Servidor);
 
   pthread_t read_central_thread;
 
@@ -290,6 +287,7 @@ void send_central_data(){
 int main (int argc, char *argv[])
 {
   int done;
+  char *path = malloc(200);
   char *string = malloc(1000);
 
   if (wiringPiSetup () == -1)
@@ -298,11 +296,10 @@ int main (int argc, char *argv[])
   pthread_t dht22_thread;
   pthread_t read_central_thread;
 
-  //chama arquivo 1
-  // read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_01.json");
+  printf("Coloque o nome do arquivo de configuracao da sala que deseja configurar (exemplo -> sala.json):\n");
+  scanf("%s", path);
 
-  // chama arquivo 2
-  read_jsonconfig("/home/dafnemoreira/distributed/configuracao_sala_02.json");
+  read_jsonconfig(path);
 
   init_gpio();
   init_states();

@@ -3,7 +3,6 @@
 #include "cJSON.c"
 #include "io.h"
 #include "gpio_to_wiring.c"
-#include <string.h>
 
 void read_jsonconfig (char *path){
 
@@ -25,7 +24,7 @@ void read_jsonconfig (char *path){
     const cJSON *porta_servidor_central = NULL;
     const cJSON *ip_servidor_distribuido = NULL;
     const cJSON *porta_servidor_distribuido = NULL;
-    const cJSON *nome = NULL;
+    const cJSON *nome_aux = NULL;
 
     const cJSON *output = NULL;
     const cJSON *outputs = NULL;
@@ -50,15 +49,15 @@ void read_jsonconfig (char *path){
     porta_servidor_central = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "porta_servidor_central");
     ip_servidor_distribuido = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "ip_servidor_distribuido");
     porta_servidor_distribuido = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "porta_servidor_distribuido");
-    nome = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "nome");
+    nome_aux = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "nome");
+
+    strcpy(nome, nome_aux->valuestring);
+
+    printf("%s\n", nome);
 
     // ip_dist = ip_servidor_distribuido->valuestring;
     porta_dist =  porta_servidor_distribuido->valueint;
-
     strcpy(ip_dist, ip_servidor_distribuido->valuestring);
-
-    printf("%s\n", ip_dist);
-    printf("%d\n", porta_dist);
 
     int i = 0;
     outputs = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "outputs");

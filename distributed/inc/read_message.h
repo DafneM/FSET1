@@ -67,6 +67,8 @@ void read_json_message(char *buf){
     SC_qtd = cJSON_GetObjectItemCaseSensitive(message, "SC_qtd");
     DHT22_state = cJSON_GetObjectItemCaseSensitive(message, "DHT22_state");
 
+    states.nome = nome->valuestring;
+
     states.L_01_state = L_01_state->valueint;
     states.L_02_state = L_02_state->valueint;
     states.PR_state = PR_state->valueint;

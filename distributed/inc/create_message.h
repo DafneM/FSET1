@@ -11,6 +11,8 @@ char *create_json_message(){
 
     char *string = NULL;
 
+    cJSON *nome_aux = NULL;
+
     cJSON *L_01_state = NULL;
     cJSON *L_02_state = NULL;
     cJSON *PR_state = NULL;
@@ -24,6 +26,8 @@ char *create_json_message(){
     cJSON *SC_OUT_state = NULL;
     cJSON *SC_qtd = NULL;
     cJSON *DHT22_state = NULL;
+
+    nome_aux = cJSON_CreateString(nome);
 
     L_01_state = cJSON_CreateNumber(states.L_01_state);
     L_02_state = cJSON_CreateNumber(states.L_02_state);
@@ -42,6 +46,8 @@ char *create_json_message(){
     DHT22_state = cJSON_CreateNumber(states.DHT22_state);
 
     cJSON *message = cJSON_CreateObject();
+
+    cJSON_AddItemToObject(message, "nome", nome_aux);
 
     cJSON_AddItemToObject(message, "L_01_state", L_01_state);
     cJSON_AddItemToObject(message, "L_02_state", L_02_state);

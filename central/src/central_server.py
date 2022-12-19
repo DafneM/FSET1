@@ -4,6 +4,7 @@ from parse import json_to_object
 from parse import object_to_json
 import json
 import sys
+import time
 
 # IP = "164.41.98.26"
 # PORT = 10733
@@ -15,11 +16,19 @@ data_payload = 2048
 FORMAT = "utf-8"
 json_message =  {}
 
+connections = {}
+
+salas = dict()
+
 def receive_client(connection, addr):
-    global json_message
+    global json_message, salas
 
     print("Conexao nova")
     flag_conn = 1
+
+    response = init_json(connection, addr)
+    # print(response)
+    salas[response["nome"]] = response
     
     while flag_conn:
         message = connection.recv(data_payload)
@@ -27,11 +36,10 @@ def receive_client(connection, addr):
         if not message: 
             break
 
-        json_message = json.loads(message)
+        salas[response["nome"]] = json.loads(message)
 
-        # print(f"Mensagem recebida aqui {json_message}")
-
-    connection.close()
+        salas[response["nome"]]["ip"] = connection
+        # print(f"Mensagem recebida aqui {salas}")
 
 def send_message(connection, message):
     len_message = len(message)
@@ -39,24 +47,36 @@ def send_message(connection, message):
     connection.send(bytes(message, encoding=FORMAT))
     
 
-def manage_user_interface(connection, addr):
-    global json_message
-
+def manage_user_interface():
+    global json_message, salas
     instruction = -1
     while(instruction != 0):
-        print("Esses são os estados da sua gpio:\n")
+        
+        if not salas:
+            time.sleep(5)
+            continue
 
-        estados_print = ('Lampada 1: ' +  str(json_message["L_01_state"]) +
-        '\nLampada 2: ' + str(json_message["L_02_state"]) +
-        '\nProjetor:' + str(json_message["PR_state"]) +
-        '\nAr condicionado:' + str(json_message["AC_state"]) +
-        '\nAlarme:' + str(json_message["AL_BZ_state"]) +
-        '\nSensor de presença' + str(json_message["SPres_state"]) +
-        '\nSensor de fumaça:' + str(json_message["SFum_state"]) +
-        '\nSensor de janela' + str(json_message["SJan_state"]) +
-        '\nSensor de porta' + str(json_message["SPor_state"]) +
-        '\nQuantidade de pessoas' + str(json_message["SC_qtd"]))
-        print(estados_print)
+        for chave, sala in salas.items():
+            estados_print = (chave +
+            '\nLampada 1: ' +  str(sala["L_01_state"]) +
+            '\nLampada 2: ' + str(sala["L_02_state"]) +
+            '\nProjetor: ' + str(sala["PR_state"]) +
+            '\nAr condicionado: ' + str(sala["AC_state"]) +
+            '\nAlarme: ' + str(sala["AL_BZ_state"]) +
+            '\nSensor de presença: ' + str(sala["SPres_state"]) +
+            '\nSensor de fumaça: ' + str(sala["SFum_state"]) +
+            '\nSensor de janela: ' + str(sala["SJan_state"]) +
+            '\nSensor de porta: ' + str(sala["SPor_state"]) +
+            '\nQuantidade de pessoas: ' + str(sala["SC_qtd"]))
+
+            print(estados_print)
+
+        # for sala in salas.keys():
+        #     print(f"{sala}")
+
+        choice = input("Escolha a sala que deseja acessar: ")
+        # if choice <= len(self.salas.values()):
+        #     print('Essa escolha nao é valida!') 
 
         print("O que você deseja fazer?")
         print('''   [1] Ligar lampada 01
@@ -76,62 +96,67 @@ def manage_user_interface(connection, addr):
         ''')
         instruction = int(input("Qual é a opção que você deseja? "))
 
+        print(salas[choice])
         # breakpoint()
         if instruction == 0:
-            break
+            return
 
         if instruction == 1:
-            json_message["L_01_state"] = 1
+            salas[choice]["L_01_state"] = 1
 
         if instruction == 2:
-            json_message["L_01_state"] = 0
+            salas[choice]["L_01_state"] = 0
         
         if instruction == 3:
-            json_message["L_02_state"] = 1
+            salas[choice]["L_02_state"] = 1
 
         if instruction == 4:
-            json_message["L_02_state"] = 0
+            salas[choice]["L_02_state"] = 0
 
         if instruction == 5:
-            json_message["L_01_state"] = 1
-            json_message["L_02_state"] = 1
+            salas[choice]["L_01_state"] = 1
+            salas[choice]["L_02_state"] = 1
 
         if instruction == 6:
-            json_message["L_01_state"] = 0
-            json_message["L_02_state"] = 0
+            salas[choice]["L_01_state"] = 0
+            salas[choice]["L_02_state"] = 0
 
         if instruction == 7:
-            json_message["AC_state"] = 1
+            salas[choice]["AC_state"] = 1
 
         if instruction == 8:
-            json_message["AC_state"] = 0
+            salas[choice]["AC_state"] = 0
 
         if instruction == 9:
-            json_message["PR_state"] = 1
+            salas[choice]["PR_state"] = 1
 
         if instruction == 10:
-            json_message["PR_state"] = 0
+            salas[choice]["PR_state"] = 0
 
         if instruction == 11:
-            json_message["AL_BZ_state"] = 1
+            salas[choice]["AL_BZ_state"] = 1
 
         if instruction == 12:
-            json_message["AL_BZ_state"] = 0
+            salas[choice]["AL_BZ_state"] = 0
 
         if instruction == 13:
-            print(f'{json_message}\n')
+            print(f'{salas[choice]}\n')
 
-        json_send_message = object_to_json(json_message)
-        send_message(connection, json_send_message)
+        ip = salas[choice].pop("ip")
+        json_send_message = object_to_json(salas[choice])
+        send_message(ip, json_send_message)
+        salas[choice]["ip"] = ip
 
 def init_json(connection, addr):
     global json_message
 
     message = connection.recv(data_payload)
     json_message = json.loads(message)
+    
+    return json_message
 
 def main():
-    global IP, PORT, ADDR
+    global IP, PORT, ADDR, salas
 
     IP = sys.argv[1]
     PORT = int(sys.argv[2])
@@ -143,18 +168,17 @@ def main():
     server.listen()
     print(f"ip e porta {IP}:{PORT}")
 
-    connection, addr = server.accept()
-
-    init_json(connection, addr)
-
-    thread = threading.Thread(target=receive_client, args=(connection, addr))
-    thread.start()
-
-    thread = threading.Thread(target=manage_user_interface(connection, addr))
-    thread.start()
     # manage_user_interface(connection, addr)
+    thread = threading.Thread(target=manage_user_interface)
+    thread.start()
 
-    import time
+    while True:
+        connection, addr = server.accept()
+
+        connections[connection.getpeername()[0]] = connection
+
+        threading.Thread(target=receive_client, args=(connection, addr)).start()
+
     while True:
         time.sleep(100)
 

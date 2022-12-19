@@ -18,5 +18,8 @@
     "SC_IN_qtd": 0,
     "SC_OUT_state": 1,
     "SC_OUT_qtd": 0,
-    "DHT22_state": 1
+    "DHT22_state": 1,
+    "lala": "/home/dafnemoreira/distributed/src/configuracao_sala_02.json"
 }
+
+

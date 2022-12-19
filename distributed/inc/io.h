@@ -34,6 +34,6 @@ gpio_temps gpio_temp;
 
 unsigned short porta_dist;
 char ip_dist[20];
-char *nome;
+char nome[10];
 
 #endif
