@@ -26,6 +26,8 @@ char *create_json_message(){
     cJSON *SC_OUT_state = NULL;
     cJSON *SC_qtd = NULL;
     cJSON *DHT22_state = NULL;
+    cJSON *DHT_temp = NULL;
+    cJSON *DHT_humidity = NULL;
 
     nome_aux = cJSON_CreateString(nome);
 
@@ -44,6 +46,9 @@ char *create_json_message(){
     SC_OUT_state = cJSON_CreateNumber(states.SC_OUT_state);
     SC_qtd = cJSON_CreateNumber(states.SC_qtd);
     DHT22_state = cJSON_CreateNumber(states.DHT22_state);
+
+    DHT_temp = cJSON_CreateNumber(states.DHT_temp);
+    DHT_humidity = cJSON_CreateNumber(states.DHT_humidity);
 
     cJSON *message = cJSON_CreateObject();
 
@@ -64,6 +69,9 @@ char *create_json_message(){
     cJSON_AddItemToObject(message, "SC_OUT_state", SC_OUT_state);
     cJSON_AddItemToObject(message, "SC_qtd", SC_qtd);
     cJSON_AddItemToObject(message, "DHT22_state", DHT22_state);
+
+    cJSON_AddItemToObject(message, "DHT_temp", DHT_temp);
+    cJSON_AddItemToObject(message, "DHT_humidity", DHT_humidity);
 
     string = cJSON_Print(message);
     

@@ -34,17 +34,10 @@ struct sockaddr_in servidorAddr;
 unsigned short servidorPorta;
 char *IP_Servidor;
 
+cont_pessoa_in = 0;
+cont_pessoa_out = 0;
+
 #define WAIT_TIME 10000
-
-void handlePeopleIN(void) {
-  	states.SC_qtd++;
-}
-
-
-void handlePeopleOUT(void) {
-  	states.SC_qtd--;
-}
-
 
 void handleSPres(void) {
   	if (states.SPres_state == 1) {
@@ -118,10 +111,13 @@ void turnOffAll(){
 }
 
 void *read_dht22 (void *arg){
-  int done = 0;
-  while(!done){
-		done = read_dht_data(DHT22);
-		delay(WAIT_TIME); 
+  int result = 0;
+  double *DHTtemp_humidity = malloc(2);
+  while(1){
+		result = capture_dht22(gpio_temp.gpio, DHTtemp_humidity);
+    states.DHT_temp = DHTtemp_humidity[0];
+    states.DHT_humidity = DHTtemp_humidity[1];
+		// delay(WAIT_TIME); 
   }
 }
 
@@ -153,7 +149,8 @@ void init_states(){
   states.SC_IN_state = digitalRead(SC_IN);
   states.SC_OUT_state = digitalRead(SC_OUT);
   states.SC_qtd = 0;
-  states.DHT22_state = digitalRead(DHT22);
+  states.DHT_temp = 0;
+  states.DHT_humidity = 0;
 }
 
 void def_pins(){
@@ -274,6 +271,29 @@ void verify_states(){
   }
 }
 
+void* conta_pessoas(void *arg){
+  while (1) {
+    // printf("ENTRADAS E SAIDAS %d %d", gpio_inputs[4].gpio, gpio_inputs[5].gpio);
+    // printf("IN E OUT: %d %d", SC_IN, SC_OUT);
+    int in = digitalRead(SC_IN);
+    int out = digitalRead(SC_OUT);
+    // printf("IN E OUT: %d %d\n", in, out);
+    // TA PRINTANDO 0
+    // printf("IN E OUT: %d %d", in, out);
+    if(in == 0 || in != cont_pessoa_in){
+      cont_pessoa_in = in;
+      states.SC_qtd = states.SC_qtd + cont_pessoa_in;
+    }
+
+    if(out == 0 || out != cont_pessoa_out ){
+      cont_pessoa_out = out;
+      states.SC_qtd = states.SC_qtd - cont_pessoa_out;
+    }
+    // printf("thread conta pessoas: %d", states.SC_qtd);
+    usleep(200000);
+  }
+}
+
 void send_central_data(){
   	char *string;
 
@@ -294,6 +314,7 @@ int main (int argc, char *argv[])
     return 1 ;
 
   pthread_t dht22_thread;
+  pthread_t cont_pessoa_thread;
   pthread_t read_central_thread;
 
   printf("Coloque o nome do arquivo de configuracao da sala que deseja configurar (exemplo -> sala.json):\n");
@@ -307,6 +328,7 @@ int main (int argc, char *argv[])
   open_distributed_client_socket();
 
   pthread_create(&dht22_thread, NULL, read_dht22, NULL);
+  pthread_create(&cont_pessoa_thread, NULL, conta_pessoas, NULL);
   pthread_create(&read_central_thread, NULL, read_central, NULL);
 
   wiringPiISR(SPres, INT_EDGE_BOTH, &handleSPres);
@@ -314,13 +336,12 @@ int main (int argc, char *argv[])
   wiringPiISR(SJan, INT_EDGE_BOTH, &handleSJan);
   wiringPiISR(SPor, INT_EDGE_BOTH, &handleSPor);
 
-  wiringPiISR(SC_IN, INT_EDGE_BOTH, handlePeopleIN);
-  wiringPiISR(SC_OUT, INT_EDGE_BOTH, handlePeopleOUT);
-
   while(1){
     send_central_data();
     sleep(1);
   }
+
+  pthread_join(dht22_thread, NULL);
 
   // turnOnAll();
   // delay(500);

@@ -1,98 +1,179 @@
 /*
- *  dht.c:
- *      Author: Juergen Wolf-Hofer
- *      based on / adapted from http://www.uugear.com/portfolio/read-dht1122-temperature-humidity-sensor-from-raspberry-pi/
- *	reads temperature and humidity from DHT11 or DHT22 sensor and outputs according to selected mode
+ * DHT22 for Raspberry Pi with WiringPi
+ * Original Author: Hyun Wook Choi
+ * Original Version: 0.1.0
+ * Forked from: https://github.com/ccoong7/DHT22
  */
 
-#include <wiringPi.h>
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <wiringPi.h>
 
-// CONSTANTS 
-#define MAX_TIMINGS	85
-#define DEBUG 0
+int signal = 18;
+unsigned short data[5] = {0, 0, 0, 0, 0};
 
-// FUNCTION DEFINITIONS
-int read_dht_data(int dht_pin) {
 
-	// printf("cheguei");
+short readData()
+{
+	unsigned short val = 0x00;
+	unsigned short signal_length = 0;
+	unsigned short val_counter = 0;
+	unsigned short loop_counter = 0;
 
-	int data[5] = { 0, 0, 0, 0, 0 };
-	float temp_cels = -1;
-	float humidity  = -1;
+	while (1)
+	{
+		// Count only HIGH signal
+		while (digitalRead(signal) == HIGH)
+		{
+			signal_length++;
 
-	uint8_t laststate = HIGH;
-	uint8_t counter	= 0;
-	uint8_t j = 0;
-	uint8_t i;
-
-	data[0] = data[1] = data[2] = data[3] = data[4] = 0;
-
-	/* pull pin down for 18 milliseconds */
-	pinMode(dht_pin, OUTPUT);
-	digitalWrite(dht_pin, LOW);
-	delay(18);
-
-	/* prepare to read the pin */
-	pinMode(dht_pin, INPUT);
-
-	// printf("%d", dht_pin);
-
-	/* detect change and read data */
-	for ( i = 0; i < MAX_TIMINGS; i++ ) {
-		counter = 0;
-		while ( digitalRead( dht_pin ) == laststate ) {
-			counter++;
-			delayMicroseconds( 1 );
-			if ( counter == 255 ) {
-				break;
+			// When sending data ends, high signal occur infinite.
+			// So we have to end this infinite loop.
+			if (signal_length >= 200)
+			{
+				return -1;
 			}
+
+			delayMicroseconds(1);
 		}
-		laststate = digitalRead( dht_pin );
 
-		if ( counter == 255 )
-			break;
+		// If signal is HIGH
+		if (signal_length > 0)
+		{
+			loop_counter++;	// HIGH signal counting
 
-		/* ignore first 3 transitions */
-		if ( (i >= 4) && (i % 2 == 0) ) {
-			/* shove each bit into the storage bytes */
-			data[j / 8] <<= 1;
-			if ( counter > 16 )
-				data[j / 8] |= 1;
-			j++;
+			// The DHT22 sends a lot of unstable signals.
+			// So extended the counting range.
+			if (signal_length < 10)
+			{
+				// Unstable signal
+				val <<= 1;		// 0 bit. Just shift left
+			}
+
+			else if (signal_length < 30)
+			{
+				// 26~28us means 0 bit
+				val <<= 1;		// 0 bit. Just shift left
+			}
+
+			else if (signal_length < 85)
+			{
+				// 70us means 1 bit
+				// Shift left and input 0x01 using OR operator
+				val <<= 1;
+				val |= 1;
+			}
+
+			else
+			{
+				// Unstable signal
+				return -1;
+			}
+
+			signal_length = 0;	// Initialize signal length for next signal
+			val_counter++;		// Count for 8 bit data
+		}
+
+		// The first and second signal is DHT22's start signal.
+		// So ignore these data.
+		if (loop_counter < 3)
+		{
+			val = 0x00;
+			val_counter = 0;
+		}
+
+		// If 8 bit data input complete
+		if (val_counter >= 8)
+		{
+			// 8 bit data input to the data array
+			data[(loop_counter / 8) - 1] = val;
+
+			val = 0x00;
+			val_counter = 0;
 		}
 	}
+}
 
-	// printf("aqui");
 
-	/*
-	 * check we read 40 bits (8bit x 5 ) + verify checksum in the last byte
-	 * print it out if data is good
-	 */
-	if ( (j >= 40) && (data[4] == ( (data[0] + data[1] + data[2] + data[3]) & 0xFF) ) ) {
-		printf("aqui2");
-		float h = (float)((data[0] << 8) + data[1]) / 10;
-		if ( h > 100 ) {
-			h = data[0];	// for DHT11
+int capture_dht22(int pin, double *DHTtemp_humidity)
+{
+	float humidity;
+	float celsius;
+	float fahrenheit;
+	short checksum;
+
+	signal = pin;
+	// float retorno[2];
+
+	// GPIO Initialization
+	// if (wiringPiSetupGpio() == -1)
+	// {
+	// 	printf("[x_x] GPIO Initialization FAILED.\n");
+	// 	return -1;
+	// }
+
+	for (unsigned char i = 0; i < 10; i++)
+	{
+		pinMode(signal, OUTPUT);
+
+		// Send out start signal
+		digitalWrite(signal, LOW);
+		delay(20);					// Stay LOW for 5~30 milliseconds
+		pinMode(signal, INPUT);		// 'INPUT' equals 'HIGH' level. And signal read mode
+
+		readData();		// Read DHT22 signal
+
+		// The sum is maybe over 8 bit like this: '0001 0101 1010'.
+		// Remove the '9 bit' data using AND operator.
+		checksum = (data[0] + data[1] + data[2] + data[3]) & 0xFF;
+
+		// If Check-sum data is correct (NOT 0x00), display humidity and temperature
+		if (data[4] == checksum && checksum != 0x00)
+		{
+			// * 256 is the same thing '<< 8' (shift).
+			humidity = ((data[0] * 256) + data[1]) / 10.0;
+			
+			// found that with the original code at temperatures > 25.4 degrees celsius
+			// the temperature would print 0.0 and increase further from there.
+			// Eventually when the actual temperature drops below 25.4 again
+			// it would print the temperature as expected.
+			// Some research and comparisin with other C implementation suggest a
+			// different calculation of celsius.
+			//celsius = data[3] / 10.0; //original
+			celsius = (((data[2] & 0x7F)*256) + data[3]) / 10.0; //Juergen Wolf-Hofer
+
+			// If 'data[2]' data like 1000 0000, It means minus temperature
+			if (data[2] == 0x80)
+			{
+				celsius *= -1;
+			}
+
+			fahrenheit = ((celsius * 9) / 5) + 32;
+
+			// Display all data
+			// printf("TEMP: %6.2f *C (%6.2f *F) | HUMI: %6.2f %\n\n", celsius, fahrenheit, humidity);
+
+			DHTtemp_humidity[0] = (double)celsius;
+			DHTtemp_humidity[1] = (double)humidity;
+
+			// printf("retorno %6.2f | %6.2f", DHTtemp_humidity[0], DHTtemp_humidity[1]);
+
+			return 0;
 		}
-		float c = (float)(((data[2] & 0x7F) << 8) + data[3]) / 10;
-		if ( c > 125 ) {
-			c = data[2];	// for DHT11
+
+		else
+		{
+			printf("[x_x] Invalid Data. Try again.\n\n");
 		}
-		if ( data[2] & 0x80 ) {
-			c = -c;
+
+		// Initialize data array for next loop
+		for (unsigned char i = 0; i < 5; i++)
+		{
+			data[i] = 0;
 		}
-		temp_cels = c;
-		humidity = h;
-		printf( "read_dht_data() Humidity = %.1f %% Temperature = %.1f\n", humidity, temp_cels);
-		if (DEBUG) printf( "read_dht_data() Humidity = %.1f %% Temperature = %.1f\n", humidity, temp_cels);
-		return 0; // OK
-	} else {
-		printf("no else");
-		if (DEBUG) printf( "read_dht_data() Data not good, skip\n" );
-		temp_cels = humidity = -1;
-		return 1; // NOK
+
+		delay(2000);	// DHT22 average sensing period is 2 seconds
 	}
+
+	return 0;
 }

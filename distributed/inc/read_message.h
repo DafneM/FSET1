@@ -35,6 +35,9 @@ void read_json_message(char *buf){
     const cJSON *SC_qtd = NULL;
     const cJSON *DHT22_state = NULL;
 
+    const cJSON *DHT_temp = NULL;
+    const cJSON *DHT_humidity = NULL;
+
     if (message == NULL)
     {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -67,6 +70,9 @@ void read_json_message(char *buf){
     SC_qtd = cJSON_GetObjectItemCaseSensitive(message, "SC_qtd");
     DHT22_state = cJSON_GetObjectItemCaseSensitive(message, "DHT22_state");
 
+    DHT_temp = cJSON_GetObjectItemCaseSensitive(message, "DHT_temp");
+    DHT_humidity = cJSON_GetObjectItemCaseSensitive(message, "DHT_humidity");
+
     states.nome = nome->valuestring;
 
     states.L_01_state = L_01_state->valueint;
@@ -85,6 +91,9 @@ void read_json_message(char *buf){
     states.SC_qtd = SC_qtd->valueint;
 
     states.DHT22_state = DHT22_state->valueint;
+
+    states.DHT_temp = DHT_temp->valuedouble;
+    states.DHT_humidity = DHT_humidity->valuedouble;
 
     end:
         cJSON_Delete(message);

@@ -24,6 +24,8 @@ typedef struct
     int SC_OUT_state;
     int SC_qtd;
     int DHT22_state;
+    double DHT_temp;
+    double DHT_humidity;
 } state;
 state states;
 

@@ -27,7 +27,6 @@ def receive_client(connection, addr):
     flag_conn = 1
 
     response = init_json(connection, addr)
-    # print(response)
     salas[response["nome"]] = response
     
     while flag_conn:
@@ -37,7 +36,6 @@ def receive_client(connection, addr):
             break
 
         salas[response["nome"]] = json.loads(message)
-
         salas[response["nome"]]["ip"] = connection
         # print(f"Mensagem recebida aqui {salas}")
 
@@ -58,7 +56,7 @@ def manage_user_interface():
 
         for chave, sala in salas.items():
             estados_print = (chave +
-            '\nLampada 1: ' +  str(sala["L_01_state"]) +
+            '\n\nLampada 1: ' +  str(sala["L_01_state"]) +
             '\nLampada 2: ' + str(sala["L_02_state"]) +
             '\nProjetor: ' + str(sala["PR_state"]) +
             '\nAr condicionado: ' + str(sala["AC_state"]) +
@@ -67,18 +65,20 @@ def manage_user_interface():
             '\nSensor de fumaça: ' + str(sala["SFum_state"]) +
             '\nSensor de janela: ' + str(sala["SJan_state"]) +
             '\nSensor de porta: ' + str(sala["SPor_state"]) +
-            '\nQuantidade de pessoas: ' + str(sala["SC_qtd"]))
+            '\nQuantidade de pessoas: ' + str(sala["SC_qtd"]) +
+            '\nTemperatura: ' + str(round(sala["DHT_temp"], 2)) + 'ºC'
+            '\nUmidade: ' + str(round(sala["DHT_humidity"], 2)) + '%')
 
             print(estados_print)
 
         # for sala in salas.keys():
         #     print(f"{sala}")
 
-        choice = input("Escolha a sala que deseja acessar: ")
+        choice = input("\n\nEscolha a sala que deseja acessar: ")
         # if choice <= len(self.salas.values()):
         #     print('Essa escolha nao é valida!') 
 
-        print("O que você deseja fazer?")
+        print("\n\nO que você deseja fazer?")
         print('''   [1] Ligar lampada 01
         [2] Desligar lampada 01
         [3] Ligar lampada 02
@@ -94,9 +94,9 @@ def manage_user_interface():
         [13] Ver os estados 
         [0] Sair
         ''')
-        instruction = int(input("Qual é a opção que você deseja? "))
+        instruction = int(input("\nQual é a opção que você deseja? "))
 
-        print(salas[choice])
+        # print(salas[choice])
         # breakpoint()
         if instruction == 0:
             return
