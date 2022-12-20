@@ -1,5 +1,5 @@
 {
-    "ip_servidor_central": "164.41.98.16",
+    "ip_servidor_central": "192.168.1.146",
     "porta_servidor_central": 10733,
     "ip_servidor_distribuido": "192.168.1.146",
     "porta_servidor_distribuido": 10733,

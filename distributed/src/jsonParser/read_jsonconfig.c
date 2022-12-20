@@ -53,11 +53,9 @@ void read_jsonconfig (char *path){
 
     strcpy(nome, nome_aux->valuestring);
 
-    printf("%s\n", nome);
-
     // ip_dist = ip_servidor_distribuido->valuestring;
-    porta_dist =  porta_servidor_distribuido->valueint;
-    strcpy(ip_dist, ip_servidor_distribuido->valuestring);
+    porta_dist =  porta_servidor_central->valueint;
+    strcpy(ip_dist, ip_servidor_central->valuestring);
 
     int i = 0;
     outputs = cJSON_GetObjectItemCaseSensitive(configuracao_sala_json, "outputs");

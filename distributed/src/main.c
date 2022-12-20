@@ -51,9 +51,11 @@ void handleSPres(void) {
 void handleSFum(void) {
   	if (states.SFum_state == 1) {
       states.SFum_state = 0;
+      turnOff(AL_BZ);
 		}
 		else {
       states.SFum_state = 1;
+      turnOn(AL_BZ);
 		}
 }
 
@@ -86,7 +88,6 @@ void turnOff(int Y){
 void turnOnLamps(){
   turnOn(L_01);
   turnOn(L_02);
-  send_central_data();
 }
 
 void turnOffLamps(){
@@ -151,6 +152,8 @@ void init_states(){
   states.SC_qtd = 0;
   states.DHT_temp = 0;
   states.DHT_humidity = 0;
+  states.alarme_incendio_state = 0;
+  states.sistema_alarme_state = 0;
 }
 
 void def_pins(){
@@ -269,6 +272,17 @@ void verify_states(){
   if(states.AL_BZ_state == 0){
     turnOff(AL_BZ);
   }
+
+  if(states.sistema_alarme_state == 1 && (states.SPres_state == 1 || states.SPor_state == 1 || states.SJan_state == 1)){
+    turnOn(AL_BZ);
+  }
+
+  if(states.sistema_alarme_state == 0 && states.SPres_state == 1){
+    turnOff(AL_BZ);
+    turnOnLamps();
+    delay(15);
+    turnOffLamps();
+  }
 }
 
 void* conta_pessoas(void *arg){
@@ -317,7 +331,7 @@ int main (int argc, char *argv[])
   pthread_t cont_pessoa_thread;
   pthread_t read_central_thread;
 
-  printf("Coloque o nome do arquivo de configuracao da sala que deseja configurar (exemplo -> sala.json):\n");
+  printf("Digite o caminho completo do arquivo de configuracao da sala que deseja configurar (exemplo -> /home/dafnemoreira/distributed/src/configuracao_sala_02.json):\n");
   scanf("%s", path);
 
   read_jsonconfig(path);

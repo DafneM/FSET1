@@ -28,6 +28,8 @@ char *create_json_message(){
     cJSON *DHT22_state = NULL;
     cJSON *DHT_temp = NULL;
     cJSON *DHT_humidity = NULL;
+    cJSON *alarme_incendio_state = NULL;
+    cJSON *sistema_alarme_state = NULL;
 
     nome_aux = cJSON_CreateString(nome);
 
@@ -49,6 +51,9 @@ char *create_json_message(){
 
     DHT_temp = cJSON_CreateNumber(states.DHT_temp);
     DHT_humidity = cJSON_CreateNumber(states.DHT_humidity);
+
+    alarme_incendio_state = cJSON_CreateNumber(states.alarme_incendio_state);
+    sistema_alarme_state = cJSON_CreateNumber(states.sistema_alarme_state);
 
     cJSON *message = cJSON_CreateObject();
 
@@ -72,6 +77,9 @@ char *create_json_message(){
 
     cJSON_AddItemToObject(message, "DHT_temp", DHT_temp);
     cJSON_AddItemToObject(message, "DHT_humidity", DHT_humidity);
+
+    cJSON_AddItemToObject(message, "alarme_incendio_state", alarme_incendio_state);
+    cJSON_AddItemToObject(message, "sistema_alarme_state", sistema_alarme_state);
 
     string = cJSON_Print(message);
     

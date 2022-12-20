@@ -26,6 +26,9 @@ typedef struct
     int DHT22_state;
     double DHT_temp;
     double DHT_humidity;
+
+    int alarme_incendio_state;
+    int sistema_alarme_state;
 } state;
 state states;
 

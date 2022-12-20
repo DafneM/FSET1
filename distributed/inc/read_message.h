@@ -38,6 +38,9 @@ void read_json_message(char *buf){
     const cJSON *DHT_temp = NULL;
     const cJSON *DHT_humidity = NULL;
 
+    const cJSON *alarme_incendio_state = NULL;
+    const cJSON *sistema_alarme_state = NULL;
+
     if (message == NULL)
     {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -73,6 +76,9 @@ void read_json_message(char *buf){
     DHT_temp = cJSON_GetObjectItemCaseSensitive(message, "DHT_temp");
     DHT_humidity = cJSON_GetObjectItemCaseSensitive(message, "DHT_humidity");
 
+    alarme_incendio_state = cJSON_GetObjectItemCaseSensitive(message, "alarme_incendio_state");
+    sistema_alarme_state = cJSON_GetObjectItemCaseSensitive(message, "sistema_alarme_state");
+
     states.nome = nome->valuestring;
 
     states.L_01_state = L_01_state->valueint;
@@ -94,6 +100,9 @@ void read_json_message(char *buf){
 
     states.DHT_temp = DHT_temp->valuedouble;
     states.DHT_humidity = DHT_humidity->valuedouble;
+
+    states.sistema_alarme_state = sistema_alarme_state->valueint;
+    states.alarme_incendio_state = alarme_incendio_state->valueint;
 
     end:
         cJSON_Delete(message);

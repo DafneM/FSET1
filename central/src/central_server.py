@@ -15,6 +15,7 @@ ADDR = (IP, PORT)
 data_payload = 2048
 FORMAT = "utf-8"
 json_message =  {}
+cont_pessoas = 0
 
 connections = {}
 
@@ -23,7 +24,7 @@ salas = dict()
 def receive_client(connection, addr):
     global json_message, salas
 
-    print("Conexao nova")
+    print("\nOlha! Você teve uma nova conexão!\n")
     flag_conn = 1
 
     response = init_json(connection, addr)
@@ -43,7 +44,26 @@ def send_message(connection, message):
     len_message = len(message)
 
     connection.send(bytes(message, encoding=FORMAT))
-    
+
+
+def print_states():
+    for chave, sala in salas.items():
+        print( 
+        '\n\n-------------------------------------------------------\n  ' +
+        chave +
+        '\n\n  Temperatura: ' + str(round(sala["DHT_temp"], 2)) + 'ºC'
+        '\n  Umidade: ' + str(round(sala["DHT_humidity"], 2)) + '%'
+        '\n\n  Lampada 1: ' +  str(sala["L_01_state"]) +
+        '\n  Lampada 2: ' + str(sala["L_02_state"]) +
+        '\n  Projetor: ' + str(sala["PR_state"]) +
+        '\n  Ar condicionado: ' + str(sala["AC_state"]) +
+        '\n  Alarme: ' + str(sala["AL_BZ_state"]) +
+        '\n\n  Sensor de presença: ' + str(sala["SPres_state"]) +
+        '\n  Sensor de fumaça: ' + str(sala["SFum_state"]) +
+        '\n  Sensor de janela: ' + str(sala["SJan_state"]) +
+        '\n  Sensor de porta: ' + str(sala["SPor_state"]) +
+        '\n  Quantidade de pessoas: ' + str(sala["SC_qtd"]) + '\n'
+        '--------------------------------------------------------')
 
 def manage_user_interface():
     global json_message, salas
@@ -54,98 +74,133 @@ def manage_user_interface():
             time.sleep(5)
             continue
 
-        for chave, sala in salas.items():
-            estados_print = (chave +
-            '\n\nLampada 1: ' +  str(sala["L_01_state"]) +
-            '\nLampada 2: ' + str(sala["L_02_state"]) +
-            '\nProjetor: ' + str(sala["PR_state"]) +
-            '\nAr condicionado: ' + str(sala["AC_state"]) +
-            '\nAlarme: ' + str(sala["AL_BZ_state"]) +
-            '\nSensor de presença: ' + str(sala["SPres_state"]) +
-            '\nSensor de fumaça: ' + str(sala["SFum_state"]) +
-            '\nSensor de janela: ' + str(sala["SJan_state"]) +
-            '\nSensor de porta: ' + str(sala["SPor_state"]) +
-            '\nQuantidade de pessoas: ' + str(sala["SC_qtd"]) +
-            '\nTemperatura: ' + str(round(sala["DHT_temp"], 2)) + 'ºC'
-            '\nUmidade: ' + str(round(sala["DHT_humidity"], 2)) + '%')
+        # print(estados_print)
+        # for sala in salas.items():
+        #     cont_pessoas+=sala["SC_qtd"]
 
-            print(estados_print)
+        print(f'Total de pessoas ')
 
-        # for sala in salas.keys():
-        #     print(f"{sala}")
-
-        choice = input("\n\nEscolha a sala que deseja acessar: ")
+        choice = input("\n\n  Escolha a sala que deseja acessar: (Utilize o seguinte formato -> Sala 01)\n")
         # if choice <= len(self.salas.values()):
         #     print('Essa escolha nao é valida!') 
 
-        print("\n\nO que você deseja fazer?")
-        print('''   [1] Ligar lampada 01
-        [2] Desligar lampada 01
-        [3] Ligar lampada 02
-        [4] Desligar lampada 02
-        [5] Ligar as duas lampadas
-        [6] Desligar as duas lampadas
-        [7] Ligar ar condicionado
-        [8] Desligar ar condicionado
-        [9] Ligar projetor
-        [10] Desligar projetor
-        [11] Ligar alarme
-        [12] Desligar alarme
-        [13] Ver os estados 
-        [0] Sair
-        ''')
-        instruction = int(input("\nQual é a opção que você deseja? "))
+        if choice == "Duas":
+            print("\n\n  O que você deseja fazer?")
+            print('''   
+            [1] Ligar todas as lampadas
+            [2] Desligar todas as lampadas
+            [3] Ligar todos os aparelhos
+            [4] Desligar todos os aparelhos
+            [5] Ligar sistema de alarme
+            [6] Desligar sistema de alarme
+            [7] Ver os estados
+            ''')
+            instruction = int(input("\n  Qual é a opção que você deseja? "))
 
-        # print(salas[choice])
-        # breakpoint()
-        if instruction == 0:
-            return
+            if instruction == 1:
+                for s in salas.values():
+                    s["L_01_state"] = 1
 
-        if instruction == 1:
-            salas[choice]["L_01_state"] = 1
+            if instruction == 2:
+                for s in salas.values():
+                    s["L_01_state"] = 0
 
-        if instruction == 2:
-            salas[choice]["L_01_state"] = 0
-        
-        if instruction == 3:
-            salas[choice]["L_02_state"] = 1
+            if instruction == 3:
+                for s in salas.values():
+                    s["L_01_state"] = 1
+            
+            if instruction == 4:
+                for s in salas.values():
+                    s["L_01_state"] = 0
 
-        if instruction == 4:
-            salas[choice]["L_02_state"] = 0
+            if instruction == 5:
+                for s in salas.values():
+                    if (s["SPres_state"] == 1 and s["SPor_state"] == 1 and s["SJan_state"] == 1):
+                        s["sistema_alarme_state"] = 1
+                    else:
+                        print("  Você não pode ligar o sistema de alarme, pois os sensores que o ativam estão desligados\n")
 
-        if instruction == 5:
-            salas[choice]["L_01_state"] = 1
-            salas[choice]["L_02_state"] = 1
+            if instruction == 6:
+                for s in salas.values():
+                    s["sistema_alarme_state"] = 0
+            
+            if instruction == 7:
+                print_states()
+            
+            for s in salas.values():
+                ip = s.pop("ip")
+                json_send_message = object_to_json(s)
+                send_message(ip, json_send_message)
+                s["ip"] = ip
 
-        if instruction == 6:
-            salas[choice]["L_01_state"] = 0
-            salas[choice]["L_02_state"] = 0
+        else: 
+            print("\n\nO que você deseja fazer?")
+            print('''   
+            [1] Ligar lampada 01
+            [2] Desligar lampada 01
+            [3] Ligar lampada 02
+            [4] Desligar lampada 02
+            [5] Ligar as duas lampadas
+            [6] Desligar as duas lampadas
+            [7] Ligar ar condicionado
+            [8] Desligar ar condicionado
+            [9] Ligar projetor
+            [10] Desligar projetor
+            [13] Ver os estados 
+            [0] Sair
+            ''')
+            instruction = int(input("\n  Qual é a opção que você deseja? "))
 
-        if instruction == 7:
-            salas[choice]["AC_state"] = 1
+            # print(salas[choice])
+            # breakpoint()
+            if instruction == 0:
+                return
 
-        if instruction == 8:
-            salas[choice]["AC_state"] = 0
+            if instruction == 1:
+                salas[choice]["L_01_state"] = 1
 
-        if instruction == 9:
-            salas[choice]["PR_state"] = 1
+            if instruction == 2:
+                salas[choice]["L_01_state"] = 0
+            
+            if instruction == 3:
+                salas[choice]["L_02_state"] = 1
 
-        if instruction == 10:
-            salas[choice]["PR_state"] = 0
+            if instruction == 4:
+                salas[choice]["L_02_state"] = 0
 
-        if instruction == 11:
-            salas[choice]["AL_BZ_state"] = 1
+            if instruction == 5:
+                salas[choice]["L_01_state"] = 1
+                salas[choice]["L_02_state"] = 1
 
-        if instruction == 12:
-            salas[choice]["AL_BZ_state"] = 0
+            if instruction == 6:
+                salas[choice]["L_01_state"] = 0
+                salas[choice]["L_02_state"] = 0
 
-        if instruction == 13:
-            print(f'{salas[choice]}\n')
+            if instruction == 7:
+                salas[choice]["AC_state"] = 1
 
-        ip = salas[choice].pop("ip")
-        json_send_message = object_to_json(salas[choice])
-        send_message(ip, json_send_message)
-        salas[choice]["ip"] = ip
+            if instruction == 8:
+                salas[choice]["AC_state"] = 0
+
+            if instruction == 9:
+                salas[choice]["PR_state"] = 1
+
+            if instruction == 10:
+                salas[choice]["PR_state"] = 0
+
+            if instruction == 11:
+                salas[choice]["AL_BZ_state"] = 1
+
+            if instruction == 12:
+                salas[choice]["AL_BZ_state"] = 0
+
+            if instruction == 13:
+                print_states()
+
+            ip = salas[choice].pop("ip")
+            json_send_message = object_to_json(salas[choice])
+            send_message(ip, json_send_message)
+            salas[choice]["ip"] = ip
 
 def init_json(connection, addr):
     global json_message
