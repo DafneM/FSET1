@@ -5,6 +5,8 @@ from parse import object_to_json
 import json
 import sys
 import time
+from datetime import datetime
+
 
 # IP = "164.41.98.26"
 # PORT = 10733
@@ -65,6 +67,11 @@ def print_states():
         '\n  Quantidade de pessoas: ' + str(sala["SC_qtd"]) + '\n'
         '--------------------------------------------------------')
 
+def create_log(comando):
+    log = open('log.csv', 'a')
+    log.write(f'{datetime.now()}, {comando}\n')
+    log.close()
+
 def manage_user_interface():
     global json_message, salas
     instruction = -1
@@ -93,27 +100,40 @@ def manage_user_interface():
             [4] Desligar todos os aparelhos
             [5] Ligar sistema de alarme
             [6] Desligar sistema de alarme
-            [7] Ver os estados
+            [7] Ver os estados das salas
             ''')
             instruction = int(input("\n  Qual é a opção que você deseja? "))
 
             if instruction == 1:
+                create_log(f'Ligar todas as lampadas')
                 for s in salas.values():
                     s["L_01_state"] = 1
+                    s["L_02_state"] = 1
 
             if instruction == 2:
+                create_log(f'Desligar todas as lampadas')
                 for s in salas.values():
                     s["L_01_state"] = 0
+                    s["L_02_state"] = 0
 
             if instruction == 3:
+                create_log(f'Ligar todos os aparelhos')
                 for s in salas.values():
                     s["L_01_state"] = 1
+                    s["L_02_state"] = 1
+                    s["L_AC_state"] = 1
+                    s["L_PR_state"] = 1
             
             if instruction == 4:
+                create_log(f'Desligar todos os aparelhos')
                 for s in salas.values():
                     s["L_01_state"] = 0
+                    s["L_02_state"] = 0
+                    s["L_AC_state"] = 0
+                    s["L_PR_state"] = 0
 
             if instruction == 5:
+                create_log(f'Ligar sistema de alarme')
                 for s in salas.values():
                     if (s["SPres_state"] == 1 and s["SPor_state"] == 1 and s["SJan_state"] == 1):
                         s["sistema_alarme_state"] = 1
@@ -121,10 +141,12 @@ def manage_user_interface():
                         print("  Você não pode ligar o sistema de alarme, pois os sensores que o ativam estão desligados\n")
 
             if instruction == 6:
+                create_log(f'Desligar sistema de alarme')
                 for s in salas.values():
                     s["sistema_alarme_state"] = 0
             
             if instruction == 7:
+                create_log(f'Ver todos os estados')
                 print_states()
             
             for s in salas.values():
@@ -146,7 +168,7 @@ def manage_user_interface():
             [8] Desligar ar condicionado
             [9] Ligar projetor
             [10] Desligar projetor
-            [13] Ver os estados 
+            [11] Ver os estados das salas
             [0] Sair
             ''')
             instruction = int(input("\n  Qual é a opção que você deseja? "))
@@ -158,43 +180,48 @@ def manage_user_interface():
 
             if instruction == 1:
                 salas[choice]["L_01_state"] = 1
+                create_log(f'Ligar lâmpada 01 da {choice}')
 
             if instruction == 2:
                 salas[choice]["L_01_state"] = 0
+                create_log(f'Desligar lâmpada 01 da {choice}')
             
             if instruction == 3:
                 salas[choice]["L_02_state"] = 1
+                create_log(f'Ligar lâmpada 02 da {choice}')
 
             if instruction == 4:
                 salas[choice]["L_02_state"] = 0
+                create_log(f'Desligar lâmpada 02 da {choice}')
+
 
             if instruction == 5:
                 salas[choice]["L_01_state"] = 1
                 salas[choice]["L_02_state"] = 1
+                create_log(f'Ligar as duas lampadas da {choice}')
 
             if instruction == 6:
                 salas[choice]["L_01_state"] = 0
                 salas[choice]["L_02_state"] = 0
+                create_log(f'Desligar as duas lampadas da {choice}')
 
             if instruction == 7:
                 salas[choice]["AC_state"] = 1
+                create_log(f'Ligar ar condicionado da {choice}')
 
             if instruction == 8:
                 salas[choice]["AC_state"] = 0
+                create_log(f'Desligar ar condicionado da {choice}')
 
             if instruction == 9:
                 salas[choice]["PR_state"] = 1
+                create_log(f'Ligar projetor da {choice}')
 
             if instruction == 10:
                 salas[choice]["PR_state"] = 0
+                create_log(f'Desligar projetor da {choice}')
 
             if instruction == 11:
-                salas[choice]["AL_BZ_state"] = 1
-
-            if instruction == 12:
-                salas[choice]["AL_BZ_state"] = 0
-
-            if instruction == 13:
                 print_states()
 
             ip = salas[choice].pop("ip")

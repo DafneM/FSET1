@@ -1,8 +1,8 @@
 {
     "ip_servidor_central": "192.168.1.146",
-    "porta_servidor_central": 10733,
+    "porta_servidor_central": 10732,
     "ip_servidor_distribuido": "192.168.1.146",
-    "porta_servidor_distribuido": 10733,
+    "porta_servidor_distribuido": 10732,
     "nome": "Sala 02",
     "outputs": [
         {

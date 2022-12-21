@@ -262,7 +262,7 @@ void verify_states(){
   }
 
   if(states.PR_state == 0){
-    turnOn(PR);
+    turnOff(PR);
   }
 
   if(states.AL_BZ_state == 1){
@@ -278,7 +278,6 @@ void verify_states(){
   }
 
   if(states.sistema_alarme_state == 0 && states.SPres_state == 1){
-    turnOff(AL_BZ);
     turnOnLamps();
     delay(15);
     turnOffLamps();
@@ -287,13 +286,8 @@ void verify_states(){
 
 void* conta_pessoas(void *arg){
   while (1) {
-    // printf("ENTRADAS E SAIDAS %d %d", gpio_inputs[4].gpio, gpio_inputs[5].gpio);
-    // printf("IN E OUT: %d %d", SC_IN, SC_OUT);
     int in = digitalRead(SC_IN);
     int out = digitalRead(SC_OUT);
-    // printf("IN E OUT: %d %d\n", in, out);
-    // TA PRINTANDO 0
-    // printf("IN E OUT: %d %d", in, out);
     if(in == 0 || in != cont_pessoa_in){
       cont_pessoa_in = in;
       states.SC_qtd = states.SC_qtd + cont_pessoa_in;
@@ -303,7 +297,6 @@ void* conta_pessoas(void *arg){
       cont_pessoa_out = out;
       states.SC_qtd = states.SC_qtd - cont_pessoa_out;
     }
-    // printf("thread conta pessoas: %d", states.SC_qtd);
     usleep(200000);
   }
 }
@@ -356,10 +349,6 @@ int main (int argc, char *argv[])
   }
 
   pthread_join(dht22_thread, NULL);
-
-  // turnOnAll();
-  // delay(500);
-  // turnOffAll();
 
   return 0 ;
 }
