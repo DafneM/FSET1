@@ -114,7 +114,7 @@ def manage_user_interface():
                     s["L_01_state"] = 1
                     s["L_02_state"] = 1
                     s["AC_state"] = 1
-                    s["L_PR_state"] = 1
+                    s["PR_state"] = 1
             
             if instruction == 4:
                 create_log(f'Desligar todos os aparelhos')
@@ -122,7 +122,7 @@ def manage_user_interface():
                     s["L_01_state"] = 0
                     s["L_02_state"] = 0
                     s["AC_state"] = 0
-                    s["L_PR_state"] = 0
+                    s["PR_state"] = 0
 
             if instruction == 5:
                 create_log(f'Ligar sistema de alarme')
