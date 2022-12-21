@@ -1,9 +1,38 @@
-# FSET1
+# Fundamentos de sistemas embarcados - TRABALHO 1
 
-Para rodar o central
+Repositório do TRABALHO 1 da disciplina de Fundamentos de Sistemas Embarcados (FGA-UnB).
 
-`python central_server.py [IP] [PORTA]`
+## Servidor central
 
-192.168.1.146 10733
+### Dependências
+    python
 
-/home/dafnemoreira/distributed/src/configuracao_sala_02.json
+Para executar o servidor central, utilize:
+
+```bash
+cd central_server
+cd src
+python central_server.py [IP] [PORTA]
+```
+
+## Servidor distribuido
+
+### Dependências
+    gcc 
+    wiringPi
+    make
+
+```bash
+cd distributed
+make
+bin/distributed
+```
+
+Assim que o servidor distribuido for conectado, vai pedir o caminho do arquivo de configuração json que deseja-se utilizar, nesse caso, é só colocar o caminho completo
+para chegar no arquivo json:
+
+'/home/dafnemoreira/distributed/src/configuracao_sala_01.json'
+
+Pode-se inicializar os servidores em qualquer ordem, que eles estaram esperando para se conectar.
+
+

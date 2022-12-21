@@ -81,15 +81,7 @@ def manage_user_interface():
             time.sleep(5)
             continue
 
-        # print(estados_print)
-        # for sala in salas.items():
-        #     cont_pessoas+=sala["SC_qtd"]
-
-        # print(f'Total de pessoas ')
-
         choice = input("\n\n  Escolha a sala que deseja acessar: (Utilize o seguinte formato -> Sala 01) Para mandar um comando para as duas digite Duas\n")
-        # if choice <= len(self.salas.values()):
-        #     print('Essa escolha nao é valida!') 
 
         if choice == "Duas":
             print("\n\n  O que você deseja fazer?")
@@ -168,7 +160,9 @@ def manage_user_interface():
             [8] Desligar ar condicionado
             [9] Ligar projetor
             [10] Desligar projetor
-            [11] Ver os estados das salas
+            [11] Ligar todos os aparelhos 
+            [12] Desligar todos os aparelhos
+            [13] Ver os estados das salas
             [0] Sair
             ''')
             instruction = int(input("\n  Qual é a opção que você deseja? "))
@@ -222,6 +216,20 @@ def manage_user_interface():
                 create_log(f'Desligar projetor da {choice}')
 
             if instruction == 11:
+                salas[choice]["L_01_state"] = 1
+                salas[choice]["L_02_state"] = 1
+                salas[choice]["L_AC_state"] = 1
+                salas[choice]["PR_state"] = 1
+                create_log(f'Ligar todos os aparelhos da {choice}')
+
+            if instruction == 12:
+                salas[choice]["L_01_state"] = 0
+                salas[choice]["L_02_state"] = 0
+                salas[choice]["L_AC_state"] = 0
+                salas[choice]["PR_state"] = 0
+                create_log(f'Desligar todos os aparelhos da {choice}')
+
+            if instruction == 13:
                 print_states()
 
             ip = salas[choice].pop("ip")

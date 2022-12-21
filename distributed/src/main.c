@@ -292,7 +292,6 @@ void* conta_pessoas(void *arg){
       cont_pessoa_in = in;
       states.SC_qtd = states.SC_qtd + cont_pessoa_in;
     }
-
     if(out == 0 || out != cont_pessoa_out ){
       cont_pessoa_out = out;
       states.SC_qtd = states.SC_qtd - cont_pessoa_out;
