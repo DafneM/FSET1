@@ -87,7 +87,7 @@ def manage_user_interface():
 
         print(f'Total de pessoas ')
 
-        choice = input("\n\n  Escolha a sala que deseja acessar: (Utilize o seguinte formato -> Sala 01)\n")
+        choice = input("\n\n  Escolha a sala que deseja acessar: (Utilize o seguinte formato -> Sala 01) Para mandar um comando para as duas digite Duas\n")
         # if choice <= len(self.salas.values()):
         #     print('Essa escolha nao é valida!') 
 
