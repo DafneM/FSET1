@@ -113,7 +113,7 @@ def manage_user_interface():
                 for s in salas.values():
                     s["L_01_state"] = 1
                     s["L_02_state"] = 1
-                    s["L_AC_state"] = 1
+                    s["AC_state"] = 1
                     s["L_PR_state"] = 1
             
             if instruction == 4:
@@ -121,7 +121,7 @@ def manage_user_interface():
                 for s in salas.values():
                     s["L_01_state"] = 0
                     s["L_02_state"] = 0
-                    s["L_AC_state"] = 0
+                    s["AC_state"] = 0
                     s["L_PR_state"] = 0
 
             if instruction == 5:
